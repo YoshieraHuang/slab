@@ -175,37 +175,37 @@ impl<T, U: Uint> Default for Slab<T, U> {
 /// assert_eq!("hello", slab[hello].1);
 /// ```
 #[derive(Debug)]
-pub struct VacantEntry<'a, T, U: Uint> {
+pub struct VacantEntry<'a, T, U: Uint = usize> {
     slab: &'a mut Slab<T, U>,
     key: U,
 }
 
 /// A consuming iterator over the values stored in a `Slab`
-pub struct IntoIter<T, U: Uint> {
+pub struct IntoIter<T, U: Uint = usize> {
     entries: iter::Enumerate<vec::IntoIter<Entry<T, U>>>,
     len: U,
 }
 
 /// An iterator over the values stored in the `Slab`
-pub struct Iter<'a, T, U: Uint> {
+pub struct Iter<'a, T, U: Uint = usize> {
     entries: iter::Enumerate<slice::Iter<'a, Entry<T, U>>>,
     len: U,
 }
 
 /// A mutable iterator over the values stored in the `Slab`
-pub struct IterMut<'a, T, U: Uint> {
+pub struct IterMut<'a, T, U: Uint = usize> {
     entries: iter::Enumerate<slice::IterMut<'a, Entry<T, U>>>,
     len: U,
 }
 
 /// A draining iterator for `Slab`
-pub struct Drain<'a, T, U: Uint> {
+pub struct Drain<'a, T, U: Uint = usize> {
     inner: vec::Drain<'a, Entry<T, U>>,
     len: U,
 }
 
 #[derive(Clone)]
-enum Entry<T, U: Uint> {
+enum Entry<T, U: Uint = usize> {
     Vacant(U),
     Occupied(T),
 }
