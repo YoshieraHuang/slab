@@ -9,7 +9,7 @@ fn insert_get_remove_one() {
     let mut slab = Slab::new();
     assert!(slab.is_empty());
 
-    let key = slab.insert(10);
+    let key: usize = slab.insert(10);
 
     assert_eq!(slab[key], 10);
     assert_eq!(slab.get(key), Some(&10));
@@ -23,7 +23,7 @@ fn insert_get_remove_one() {
 
 #[test]
 fn insert_get_many() {
-    let mut slab = Slab::with_capacity(10);
+    let mut slab = Slab::with_capacity(10u8);
 
     for i in 0..10 {
         let key = slab.insert(i + 10);
@@ -42,7 +42,7 @@ fn insert_get_many() {
 
 #[test]
 fn insert_get_remove_many() {
-    let mut slab = Slab::with_capacity(10);
+    let mut slab = Slab::with_capacity(10u8);
     let mut keys = vec![];
 
     for i in 0..10 {
@@ -64,7 +64,7 @@ fn insert_get_remove_many() {
 
 #[test]
 fn insert_with_vacant_entry() {
-    let mut slab = Slab::with_capacity(1);
+    let mut slab = Slab::with_capacity(1u8);
     let key;
 
     {
@@ -78,7 +78,7 @@ fn insert_with_vacant_entry() {
 
 #[test]
 fn get_vacant_entry_without_using() {
-    let mut slab = Slab::<usize>::with_capacity(1);
+    let mut slab = Slab::<u8, u8>::with_capacity(1);
     let key = slab.vacant_entry().key();
     assert_eq!(key, slab.vacant_entry().key());
 }
@@ -86,21 +86,21 @@ fn get_vacant_entry_without_using() {
 #[test]
 #[should_panic(expected = "invalid key")]
 fn invalid_get_panics() {
-    let slab = Slab::<usize>::with_capacity(1);
+    let slab = Slab::<usize, u8>::with_capacity(1);
     let _ = &slab[0];
 }
 
 #[test]
 #[should_panic(expected = "invalid key")]
 fn invalid_get_mut_panics() {
-    let mut slab = Slab::<usize>::new();
+    let mut slab = Slab::<u8, u8>::new();
     let _ = &mut slab[0];
 }
 
 #[test]
 #[should_panic(expected = "invalid key")]
 fn double_remove_panics() {
-    let mut slab = Slab::<usize>::with_capacity(1);
+    let mut slab = Slab::<_, u8>::with_capacity(1);
     let key = slab.insert(123);
     slab.remove(key);
     slab.remove(key);
@@ -109,14 +109,14 @@ fn double_remove_panics() {
 #[test]
 #[should_panic(expected = "invalid key")]
 fn invalid_remove_panics() {
-    let mut slab = Slab::<usize>::with_capacity(1);
+    let mut slab = Slab::<u8, u8>::with_capacity(1);
     slab.remove(0);
 }
 
 #[test]
 fn slab_get_mut() {
     let mut slab = Slab::new();
-    let key = slab.insert(1);
+    let key: u8 = slab.insert(1);
 
     slab[key] = 2;
     assert_eq!(slab[key], 2);
@@ -127,7 +127,7 @@ fn slab_get_mut() {
 
 #[test]
 fn key_of_tagged() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<u8, u8>::new();
     slab.insert(0);
     assert_eq!(slab.key_of(&slab[0]), 0);
 }
@@ -139,7 +139,7 @@ fn key_of_layout_optimizable() {
     let mut slab = Slab::new();
     slab.insert("foo");
     slab.insert("bar");
-    let third = slab.insert("baz");
+    let third: u8 = slab.insert("baz");
     slab.insert("quux");
     assert_eq!(slab.key_of(&slab[third]), third);
 }
@@ -148,14 +148,14 @@ fn key_of_layout_optimizable() {
 fn key_of_zst() {
     let mut slab = Slab::new();
     slab.insert(());
-    let second = slab.insert(());
+    let second: u8 = slab.insert(());
     slab.insert(());
     assert_eq!(slab.key_of(&slab[second]), second);
 }
 
 #[test]
 fn reserve_does_not_allocate_if_available() {
-    let mut slab = Slab::with_capacity(10);
+    let mut slab = Slab::with_capacity(10u8);
     let mut keys = vec![];
 
     for i in 0..6 {
@@ -174,7 +174,7 @@ fn reserve_does_not_allocate_if_available() {
 
 #[test]
 fn reserve_exact_does_not_allocate_if_available() {
-    let mut slab = Slab::with_capacity(10);
+    let mut slab = Slab::with_capacity(10u8);
     let mut keys = vec![];
 
     for i in 0..6 {
@@ -194,22 +194,24 @@ fn reserve_exact_does_not_allocate_if_available() {
 #[test]
 #[should_panic(expected = "capacity overflow")]
 fn reserve_does_panic_with_capacity_overflow() {
-    let mut slab = Slab::with_capacity(10);
+    let mut slab = Slab::with_capacity(10u8);
+    slab.set_max_capacity(100);
     slab.insert(true);
-    slab.reserve(std::usize::MAX);
+    slab.reserve(100);
 }
 
 #[test]
 #[should_panic(expected = "capacity overflow")]
 fn reserve_exact_does_panic_with_capacity_overflow() {
-    let mut slab = Slab::with_capacity(10);
+    let mut slab = Slab::with_capacity(10u8);
+    slab.set_max_capacity(100);
     slab.insert(true);
-    slab.reserve_exact(std::usize::MAX);
+    slab.reserve_exact(100);
 }
 
 #[test]
 fn retain() {
-    let mut slab = Slab::with_capacity(2);
+    let mut slab = Slab::with_capacity(2u16);
 
     let key1 = slab.insert(0);
     let key2 = slab.insert(1);
@@ -239,7 +241,7 @@ fn retain() {
 
 #[test]
 fn into_iter() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
 
     for i in 0..8 {
         slab.insert(i);
@@ -259,7 +261,7 @@ fn into_iter() {
 
 #[test]
 fn into_iter_rev() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
 
     for i in 0..4 {
         slab.insert(i);
@@ -300,7 +302,7 @@ fn iter() {
 
 #[test]
 fn iter_rev() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
 
     for i in 0..4 {
         slab.insert(i);
@@ -339,7 +341,7 @@ fn iter_mut() {
 
 #[test]
 fn iter_mut_rev() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
 
     for i in 0..4 {
         slab.insert(i);
@@ -365,7 +367,7 @@ fn iter_mut_rev() {
 
 #[test]
 fn from_iterator_sorted() {
-    let mut slab = (0..5).map(|i| (i, i)).collect::<Slab<_>>();
+    let mut slab = (0..5).map(|i| (i, i)).collect::<Slab<_, u8>>();
     assert_eq!(slab.len(), 5);
     assert_eq!(slab[0], 0);
     assert_eq!(slab[2], 2);
@@ -379,7 +381,7 @@ fn from_iterator_new_in_order() {
     let mut slab = [(0, 'a'), (1, 'a'), (1, 'b'), (0, 'b'), (9, 'a'), (0, 'c')]
         .iter()
         .cloned()
-        .collect::<Slab<_>>();
+        .collect::<Slab<_, u8>>();
     assert_eq!(slab.len(), 3);
     assert_eq!(slab[0], 'c');
     assert_eq!(slab[1], 'b');
@@ -392,7 +394,7 @@ fn from_iterator_new_in_order() {
 fn from_iterator_unordered() {
     let mut slab = vec![(1, "one"), (50, "fifty"), (3, "three"), (20, "twenty")]
         .into_iter()
-        .collect::<Slab<_>>();
+        .collect::<Slab<_, u8>>();
     assert_eq!(slab.len(), 4);
     assert_eq!(slab.vacant_entry().key(), 0);
     let mut iter = slab.iter();
@@ -405,7 +407,7 @@ fn from_iterator_unordered() {
 
 #[test]
 fn clear() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
 
     for i in 0..4 {
         slab.insert(i);
@@ -436,14 +438,14 @@ fn clear() {
 
 #[test]
 fn shrink_to_fit_empty() {
-    let mut slab = Slab::<bool>::with_capacity(20);
+    let mut slab = Slab::<bool, u8>::with_capacity(20);
     slab.shrink_to_fit();
     assert_eq!(slab.capacity(), 0);
 }
 
 #[test]
 fn shrink_to_fit_no_vacant() {
-    let mut slab = Slab::with_capacity(20);
+    let mut slab = Slab::with_capacity(20u8);
     slab.insert(String::new());
     slab.shrink_to_fit();
     assert!(slab.capacity() < 10);
@@ -451,7 +453,7 @@ fn shrink_to_fit_no_vacant() {
 
 #[test]
 fn shrink_to_fit_doesnt_move() {
-    let mut slab = Slab::with_capacity(8);
+    let mut slab = Slab::with_capacity(8u8);
     slab.insert("foo");
     let bar = slab.insert("bar");
     slab.insert("baz");
@@ -468,7 +470,7 @@ fn shrink_to_fit_doesnt_move() {
 
 #[test]
 fn shrink_to_fit_doesnt_recreate_list_when_nothing_can_be_done() {
-    let mut slab = Slab::with_capacity(16);
+    let mut slab = Slab::with_capacity(16u8);
     for i in 0..4 {
         slab.insert(Box::new(i));
     }
@@ -484,7 +486,7 @@ fn shrink_to_fit_doesnt_recreate_list_when_nothing_can_be_done() {
 
 #[test]
 fn compact_empty() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
     slab.compact(|_, _, _| panic!());
     assert_eq!(slab.len(), 0);
     assert_eq!(slab.capacity(), 0);
@@ -505,7 +507,7 @@ fn compact_empty() {
 
 #[test]
 fn compact_no_moves_needed() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
     for i in 0..10 {
         slab.insert(i);
     }
@@ -516,7 +518,7 @@ fn compact_no_moves_needed() {
     slab.compact(|_, _, _| panic!());
     assert_eq!(slab.len(), 6);
     for ((index, &value), want) in slab.iter().zip(0..6) {
-        assert!(index == value);
+        assert!(index == (value as u8));
         assert_eq!(index, want);
     }
     assert!(slab.capacity() >= 6 && slab.capacity() < 10);
@@ -524,7 +526,7 @@ fn compact_no_moves_needed() {
 
 #[test]
 fn compact_moves_successfully() {
-    let mut slab = Slab::with_capacity(20);
+    let mut slab = Slab::<_, u8>::with_capacity(20);
     for i in 0..10 {
         slab.insert(i);
     }
@@ -555,7 +557,7 @@ fn compact_moves_successfully() {
 
 #[test]
 fn compact_doesnt_move_if_closure_errors() {
-    let mut slab = Slab::with_capacity(20);
+    let mut slab = Slab::<_, u8>::with_capacity(20);
     for i in 0..10 {
         slab.insert(i);
     }
@@ -581,7 +583,7 @@ fn compact_doesnt_move_if_closure_errors() {
 
 #[test]
 fn compact_handles_closure_panic() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
     for i in 0..10 {
         slab.insert(i);
     }
@@ -615,7 +617,7 @@ fn compact_handles_closure_panic() {
 
 #[test]
 fn fully_consumed_drain() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
 
     for i in 0..3 {
         slab.insert(i);
@@ -634,7 +636,7 @@ fn fully_consumed_drain() {
 
 #[test]
 fn partially_consumed_drain() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
 
     for i in 0..3 {
         slab.insert(i);
@@ -650,7 +652,7 @@ fn partially_consumed_drain() {
 
 #[test]
 fn drain_rev() {
-    let mut slab = Slab::new();
+    let mut slab = Slab::<_, u8>::new();
     for i in 0..10 {
         slab.insert(i);
     }
