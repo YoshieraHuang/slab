@@ -1016,6 +1016,44 @@ impl<T, U: Uint> Slab<T, U> {
         }
     }
 
+    /// Return a handle to a vacant entry allowing for further manipulation.
+    /// If this slab has no vacant entry since overflow of `U` or specified 
+    /// max capacity, this function returns None.
+    ///
+    /// This function is useful when creating values that must contain their
+    /// slab key. The returned `VacantEntry` reserves a slot in the slab and is
+    /// able to query the associated key.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use slab::*;
+    /// let mut slab = Slab::<_, u8>::new();
+    /// slab.set_max_capacity(1);
+    ///
+    /// let hello = {
+    ///     let entry = slab.vacant_entry_check().unwrap();
+    ///     let key = entry.key();
+    ///
+    ///     entry.insert((key, "hello"));
+    ///     key
+    /// };
+    ///
+    /// assert_eq!(hello, slab[hello].0);
+    /// assert_eq!("hello", slab[hello].1);
+    /// assert!(slab.vacant_entry_check().is_none());
+    /// ```
+    pub fn vacant_entry_check(&mut self) -> Option<VacantEntry<'_, T, U>> {
+        if self.len() >= self.max_capacity {
+            None
+        } else {
+            Some(VacantEntry{
+                key: self.next,
+                slab: self
+            })
+        }
+    }
+
     fn insert_at(&mut self, key: U, val: T) {
         self.len.inc();
 
