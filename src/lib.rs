@@ -947,7 +947,22 @@ impl<T> Slab<T> {
         }
     }
 
-    fn insert_at(&mut self, key: usize, val: T) {
+    /// Insert a value into the given position in the slab.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the given position is occupied or the number of elements in the vector overflows a `usize`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use slab::*;
+    /// let mut slab = Slab::new();
+    /// let key = slab.insert("hello");
+    /// assert_eq!(slab.remove(key), "hello");
+    /// slab.insert_at(key, "world");
+    /// ```
+    pub fn insert_at(&mut self, key: usize, val: T) {
         self.len += 1;
 
         if key == self.entries.len() {
@@ -956,7 +971,8 @@ impl<T> Slab<T> {
         } else {
             self.next = match self.entries.get(key) {
                 Some(&Entry::Vacant(next)) => next,
-                _ => unreachable!(),
+                Some(_) => panic!("The given position is occupied"),
+                None => panic!("The key is out of bound"),
             };
             self.entries[key] = Entry::Occupied(val);
         }
